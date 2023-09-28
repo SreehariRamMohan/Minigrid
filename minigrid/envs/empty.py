@@ -71,6 +71,7 @@ class EmptyEnv(MiniGridEnv):
         agent_start_pos=(1, 1),
         agent_start_dir=0,
         max_steps: int | None = None,
+        goal_pos: tuple[int, int] | None = None,
         **kwargs,
     ):
         self.agent_start_pos = agent_start_pos
@@ -80,6 +81,24 @@ class EmptyEnv(MiniGridEnv):
 
         if max_steps is None:
             max_steps = 4 * size**2
+
+        # If provided, allow the goal to be placed in a fixed position
+        if goal_pos is not None:
+            # (x, y) | (0, 0) is the top-left corner
+            # There is a border-padding of walls around the grid of width 1 x 1 tiles
+            # The goal position must be at least 2 tiles away from the edges (inclusive)
+            assert (
+                size >= 4
+            ), "for fixed goal position, grid must be at least of size 4"
+            assert (
+                goal_pos[0] >= 1 and goal_pos[1] >= 1
+            ), "goal position must be at least 2 tiles away from the edges"
+            assert (
+                goal_pos[0] <= size - 2 and goal_pos[1] <= size - 2
+            ), "goal position must be at least 2 tiles away from the edges"
+            self.goal_pos = goal_pos
+        else:
+            self.goal_pos = None
 
         super().__init__(
             mission_space=mission_space,
@@ -101,8 +120,11 @@ class EmptyEnv(MiniGridEnv):
         # Generate the surrounding walls
         self.grid.wall_rect(0, 0, width, height)
 
-        # Place a goal square in the bottom-right corner
-        self.put_obj(Goal(), width - 2, height - 2)
+        if self.goal_pos is None:
+            # Place a goal square in the bottom-right corner
+            self.put_obj(Goal(), width - 2, height - 2)
+        else:
+            self.put_obj(Goal(), *self.goal_pos)
 
         # Place the agent
         if self.agent_start_pos is not None:
