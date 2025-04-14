@@ -1123,6 +1123,13 @@ def register_minigrid_envs():
         entry_point="minigrid.envs.babyai:BossLevelNoUnlock",
     )
 
+    ### Quests 
+
+    register(
+        id="MiniGrid-Empty-Quest-v0",
+        entry_point="minigrid.envs.empty_quests:EmptyEnvQuests",
+    )
+
 
 register_minigrid_envs()
 
